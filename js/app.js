@@ -16,7 +16,25 @@ function removeItem(i){cart.splice(i,1);save()}function openCart(){renderCart();
 document.querySelector('#cartBtn').onclick=openCart;document.querySelector('[data-cart-close]').onclick=closeCart;document.querySelector('#shade').onclick=closeCart;function closeCart(){document.querySelector('#drawer').classList.remove('open');document.querySelector('#shade').classList.remove('open')}
 document.querySelector('[data-close]').onclick=()=>document.querySelector('#modal').classList.remove('open');
 window.shippingCost=0;window.shippingKm=0;
-const shippingBtn=document.querySelector('#shippingBtn');if(shippingBtn)shippingBtn.onclick=()=>{let addr=document.querySelector('#address').value.trim();if(!addr)return alert('Ingresá la dirección de entrega.');document.querySelector('#shippingStatus').textContent='La dirección quedó cargada. El costo exacto de envío se confirma por WhatsApp hasta activar el cálculo automático de ruta.';window.shippingCost=0;window.shippingKm=0;renderCart()};
+const shippingBtn=document.querySelector('#shippingBtn');if(shippingBtn)shippingBtn.onclick=async()=>{
+  let addr=document.querySelector('#address').value.trim(),status=document.querySelector('#shippingStatus'),cfg=window.URII_SUPABASE;
+  if(!addr)return alert('Ingresá la dirección de entrega.');
+  if(!cfg?.url||!cfg?.publishableKey)return alert('No está disponible el cálculo de envío.');
+  shippingBtn.disabled=true;shippingBtn.textContent='Calculando...';status.textContent='Buscando dirección y calculando la ruta...';
+  try{
+    let r=await fetch(cfg.url+'/functions/v1/calculate-shipping',{method:'POST',headers:{'Content-Type':'application/json','apikey':cfg.publishableKey,'Authorization':'Bearer '+cfg.publishableKey},body:JSON.stringify({address:addr})});
+    let d=await r.json().catch(()=>({}));
+    if(!r.ok||!d.success)throw new Error(d.error||'No se pudo calcular el envío');
+    window.shippingCost=Number(d.shipping_cost);window.shippingKm=Number(d.distance_km);
+    window.shippingAddress=d.address||addr;window.shippingInput=addr;
+    status.textContent='Ruta: '+window.shippingKm.toLocaleString('es-AR',{minimumFractionDigits:3,maximumFractionDigits:3})+' km · $2.000/km';
+    renderCart();
+  }catch(e){
+    window.shippingCost=0;window.shippingKm=0;window.shippingAddress='';window.shippingInput='';
+    status.textContent=e.message||'No se pudo calcular el envío.';renderCart();
+  }finally{shippingBtn.disabled=false;shippingBtn.textContent='Calcular envío'}
+};
+const addressInput=document.querySelector('#address');if(addressInput)addressInput.addEventListener('input',()=>{if(window.shippingInput&&addressInput.value.trim()!==window.shippingInput){window.shippingCost=0;window.shippingKm=0;window.shippingAddress='';window.shippingInput='';let s=document.querySelector('#shippingStatus');if(s)s.textContent='La dirección cambió. Volvé a calcular el envío.';renderCart()}});
 
 async function createOrder(payload){
   const cfg=window.URII_SUPABASE;
@@ -30,6 +48,7 @@ document.querySelector('#checkout').onclick=async()=>{
   if(!cart.length)return alert('Agregá al menos un producto.');
   let addr=document.querySelector('#address').value.trim();
   if(!addr)return alert('Ingresá la dirección de entrega.');
+  if(!window.shippingCost||!window.shippingKm||window.shippingInput!==addr)return alert('Calculá el envío antes de finalizar el pedido.');
   let sub=cart.reduce((a,x)=>a+(x.price||0)*x.qty,0),pending=cart.some(x=>x.price==null);
   let finalTotal=sub+(window.shippingCost||0),btn=document.querySelector('#checkout'),oldText=btn.textContent;
   btn.disabled=true;btn.textContent='Registrando pedido...';
