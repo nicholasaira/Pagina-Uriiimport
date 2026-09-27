@@ -108,8 +108,7 @@ document.querySelector('#checkout').onclick=async()=>{
   try{
     let code=await createOrder({customer_address:addr,distance_km:0,shipping_cost:0,products_total:sub,potential_total:finalTotal,has_pending_price:pending,items:cart});
     let lines=cart.map(x=>`• ${x.marca} ${x.nombre} — ${x.variant==='5ml'?'Decant 5 ml':x.variant==='10ml'?'Decant 10 ml':'Sellado'} ×${x.qty} — ${x.price==null?'Consultar disponibilidad y precio':money(x.price*x.qty)}`);
-    let totalLine=pending?`\n💰 Total parcial: ${money(finalTotal)}`:`\n💰 Total: ${money(finalTotal)}`;
-    let msg=`Hola! 👋 Quiero realizar un pedido en URIIIMPORT.\n\n🧾 Pedido #${code}\n\n🛍️ Mi pedido:\n${lines.join('\n')}\n\n💰 Productos con precio: ${money(sub)}${pending?'\n⚠️ Hay productos con disponibilidad y precio a consultar.':''}${totalLine}\n🚚 Envío: a consultar\n📍 Entrega: ${addr}\n\nQuería confirmar disponibilidad${pending?' y precio de los productos pendientes':''} y costo de envío para conocer el total final y realizar el pago. ¡Gracias!`;
+    let msg=`Hola! Quiero realizar un pedido en URIIIMPORT.\n\nPedido #${code}\n\nMi pedido:\n${lines.join('\n')}\n\nProductos con precio: ${money(sub)}${pending?'\nIMPORTANTE: Hay productos con disponibilidad y precio a consultar.':''}\nEnvío: a consultar\nEntrega: ${addr}\n\nQuería confirmar disponibilidad${pending?' y precio de los productos pendientes':''} y costo de envío para conocer el total final y realizar el pago. ¡Gracias!`;
     window.open('https://wa.me/5491152295954?text='+encodeURIComponent(msg),'_blank');
   }catch(e){alert('No pudimos registrar el pedido. '+e.message)}
   finally{btn.disabled=false;btn.textContent=oldText}
