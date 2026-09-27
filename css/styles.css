@@ -14,3 +14,5 @@
 .card:hover .product-image{transform:translateY(-4px) scale(1.025)}
 .product-image-detail{max-width:76%;max-height:76%;filter:drop-shadow(0 26px 24px rgba(0,0,0,.15))}
 @media(max-width:850px){.product-image{max-width:88%;max-height:86%}.product-image-detail{max-width:72%;max-height:72%}}
+
+.quantity-row{display:flex;align-items:center;justify-content:space-between;margin:18px 0 14px;font-size:13px;text-transform:uppercase;letter-spacing:.08em}.quantity-control{display:flex;align-items:center;border:1px solid #d7d1c6;background:#fff}.quantity-control button{width:40px;height:38px;border:0;background:transparent;font-size:20px;cursor:pointer}.quantity-control b{min-width:38px;text-align:center;font-size:14px}.quantity-control button:hover{background:#f3efe7}@media(max-width:850px){.quantity-control button{width:44px;height:42px}}
