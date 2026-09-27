@@ -1,12 +1,70 @@
 const money=n=>n==null?'Consultar disponibilidad y precio':new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(n);
 let products=[],cart=JSON.parse(localStorage.getItem('urii-cart')||'[]'),filter='all';
 const designer=['Jean Paul Gaultier','Moschino','Azzaro','Montale','Valentino','Armani','Versace','Calvin Klein'];
-const productImageIds=new Set(['9pm-night-out','amber-oud-gold','amethyst','arabians-tonka','art-universe','azzaro-most-wanted','black-exposed','cdn-iconic','cdn-intense','cdn-maleka','cdn-untold','ck-one-essence','eclaire','fakhar-black','fakhar-platin','fakhar-rose','hawas-elixir','hayaati-maleky','hayaati','honor-glory','jorge-profumo','liquid-brun','mashrabya','mayar-cherry','musamam-white','noble-blush','odyssey-aqua','odyssey-black','odyssey-dubai','odyssey-mandarin','odyssey-mega','odyssey-spectra','odyssey-white','oud-for-glory','philos-pura','qaed-black','qaed-untamed','qaed-white','salvo','scandal','stallion-53','stronger-intensely','sublime','teriaq-intense','toy-boy','valentino-intense','versace-eros','vintage-radio','yara-candy','yara-rosa']);
-const imageBase='uriiimport_productos_png/images/products/';
+const productImages={
+'amber-oud-gold':'perfumes_ordenados/01 - Al Haramain - Amber Oud Gold Edition.webp',
+'cdn-intense':'perfumes_ordenados/02 - Armaf - Club de Nuit Intense Man.webp',
+'cdn-iconic':'perfumes_ordenados/03 - Armaf - Club de Nuit Iconic.jpg',
+'cdn-untold':'perfumes_ordenados/04 - Armaf - Club de Nuit Untold.webp',
+'cdn-maleka':'perfumes_ordenados/05 - Armaf - Club de Nuit Maleka.webp',
+'odyssey-mandarin':'perfumes_ordenados/06 - Armaf - Odyssey Mandarin Sky.webp',
+'odyssey-spectra':'perfumes_ordenados/07 - Armaf - Odyssey Spectra.jpg',
+'odyssey-mega':'perfumes_ordenados/09 - Armaf - Odyssey Mega.webp',
+'odyssey-white':'perfumes_ordenados/10 - Armaf - Odyssey Homme White.webp',
+'odyssey-black':'perfumes_ordenados/11 - Armaf - Odyssey Homme Black.webp',
+'odyssey-dubai':'perfumes_ordenados/12 - Armaf - Odyssey Dubai Chocolat.jpg',
+'stallion-53':'perfumes_ordenados/13 - Emper - Stallion 53.webp',
+'mashrabya':'perfumes_ordenados/14 - Lattafa - Mashrabya.jpg',
+'yara-candy':'perfumes_ordenados/15 - Lattafa - Yara Candy.jpg',
+'yara-rosa':'perfumes_ordenados/16 - Lattafa - Yara Rosa.jpg',
+'rave-now-black':'perfumes_ordenados/17 - Rave - Now Black.webp',
+'rave-now-women':'perfumes_ordenados/18 - Rave - Now Women.jpg',
+'amethyst':'perfumes_ordenados/19 - Lattafa - Badee Al Oud Amethyst.jpg',
+'sublime':'perfumes_ordenados/20 - Lattafa - Badee Al Oud Sublime.webp',
+'noble-blush':'perfumes_ordenados/21 - Lattafa - Badee Al Oud Noble Blush.webp',
+'oud-for-glory':'perfumes_ordenados/22 - Lattafa - Badee Al Oud Oud for Glory.webp',
+'honor-glory':'perfumes_ordenados/23 - Lattafa - Badee Al Oud Honor y Glory.jfif',
+'black-exposed':'perfumes_ordenados/24 - Lattafa - Badee Al Oud Black Exposed.png',
+'hayaati':'perfumes_ordenados/25 - Lattafa - Hayaati.webp',
+'hayaati-maleky':'perfumes_ordenados/26 - Lattafa - Hayaati Al Maleky.webp',
+'teriaq-intense':'perfumes_ordenados/27 - Lattafa - Teriaq Intense.jpg',
+'vintage-radio':'perfumes_ordenados/28 - Lattafa - Vintage Radio.jpg',
+'art-universe':'perfumes_ordenados/29 - Lattafa - Art of Universe.webp',
+'fakhar-rose':'perfumes_ordenados/30 - Lattafa - Fakhar Rose.webp',
+'fakhar-black':'perfumes_ordenados/31 - Lattafa - Fakhar Black.webp',
+'fakhar-platin':'perfumes_ordenados/32 - Lattafa - Fakhar Platin.webp',
+'nebras':'perfumes_ordenados/33 - Lattafa - Nebras.jfif',
+'khamrah':'perfumes_ordenados/34 - Lattafa - Khamrah.webp',
+'khamrah-qahwa':'perfumes_ordenados/35 - Lattafa - Khamrah Qahwa.webp',
+'khamrah-hawa':'perfumes_ordenados/36 - Lattafa - Khamrah Waha.jpg',
+'confidential':'perfumes_ordenados/EXTRAS - revisar/Lattafa - Confidential Private Gold.webp',
+'confidential-platinum':'perfumes_ordenados/38 - Lattafa - Confidential Platinum.webp',
+'eclaire':'perfumes_ordenados/39 - Lattafa - Eclaire.png',
+'qaed-white':'perfumes_ordenados/40 - Lattafa - Qaed Al Fursan White.webp',
+'qaed-black':'perfumes_ordenados/41 - Lattafa - Qaed Al Fursan Black.jpg',
+'qaed-untamed':'perfumes_ordenados/42 - Lattafa - Qaed Al Fursan Untamed.jpg',
+'musamam-white':'perfumes_ordenados/43 - Lattafa - Musamam White Intense.webp',
+'mayar-cherry':'perfumes_ordenados/44 - Lattafa - Mayar Cherry Intense.jpg',
+'9pm-night-out':'perfumes_ordenados/45 - Afnan - 9PM Night Out.jpg',
+'hawas-elixir':'perfumes_ordenados/46 - Rasasi - Hawas Elixir.webp',
+'liquid-brun':'perfumes_ordenados/47 - French Avenue - Liquid Brun.png',
+'bharara-king':'perfumes_ordenados/48 - Bharara - King.webp',
+'salvo':'perfumes_ordenados/49 - Maison Alhambra - Salvo.webp',
+'jorge-profumo':'perfumes_ordenados/50 - Maison Alhambra - Jorge Di Profumo.webp',
+'philos-pura':'perfumes_ordenados/51 - Maison Alhambra - Philos Pura.webp',
+'scandal':'perfumes_ordenados/52 - Jean Paul Gaultier - Scandal Pour Homme.webp',
+'toy-boy':'perfumes_ordenados/53 - Moschino - Toy Boy.webp',
+'azzaro-most-wanted':'perfumes_ordenados/54 - Azzaro - The Most Wanted.webp',
+'arabians-tonka':'perfumes_ordenados/55 - Montale - Arabians Tonka.webp',
+'valentino-intense':'perfumes_ordenados/56 - Valentino - Born in Roma Uomo Intense.webp',
+'stronger-intensely':'perfumes_ordenados/57 - Armani - Stronger With You Intensely.webp',
+'versace-eros':'perfumes_ordenados/58 - Versace - Eros.webp',
+'ck-one-essence':'perfumes_ordenados/59 - Calvin Klein - CK One Essence.webp'
+};
 fetch('data/productos.json').then(r=>r.json()).then(d=>{products=d;render()}).catch(()=>{document.querySelector('#grid').innerHTML='<p>No se pudo cargar el catálogo.</p>'});
 function minPrice(p){return [p.p5,p.p10,p.sellado].filter(x=>x!=null).sort((a,b)=>a-b)[0]}
 function productVisual(p,detail=false){
-  if(productImageIds.has(p.id))return `<img class="product-image ${detail?'product-image-detail':''}" src="${imageBase+p.id}.png" alt="${p.marca} ${p.nombre}" loading="${detail?'eager':'lazy'}">`;
+  if(productImages[p.id])return `<img class="product-image ${detail?'product-image-detail':''}" src="${encodeURI(productImages[p.id])}" alt="${p.marca} ${p.nombre}" loading="${detail?'eager':'lazy'}">`;
   let cls=detail?'detail-product-visual':'product-visual';
   return `<div class="${cls}"><span>${p.marca}</span><b>${p.nombre}</b><small>${p.tamano||'EAU DE PARFUM'}</small></div>`
 }
