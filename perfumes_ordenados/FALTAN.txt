@@ -1,0 +1,5 @@
+Faltan imágenes para completar los 59 productos del PDF:
+08 - Armaf - Odyssey Aqua
+37 - Lattafa - Confidential
+
+Nota: el ZIP original tenía 60 imágenes. Se separaron 3 extras/repetidas en la carpeta "EXTRAS - revisar".
