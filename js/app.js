@@ -18,5 +18,28 @@ document.querySelector('[data-close]').onclick=()=>document.querySelector('#moda
 window.shippingCost=0;window.shippingKm=0;
 const shippingBtn=document.querySelector('#shippingBtn');if(shippingBtn)shippingBtn.onclick=async()=>{let addr=document.querySelector('#address').value.trim();if(!addr)return alert('Ingresá la dirección de entrega.');document.querySelector('#shippingStatus').textContent='Calculando ruta...';try{let r=await fetch('https://router.project-osrm.org/route/v1/driving/'+encodeURIComponent('-58.5255,-34.5350')+';'+encodeURIComponent('-58.48,-34.52')+'?overview=false');throw new Error('geocode-required')}catch(e){document.querySelector('#shippingStatus').textContent='Para activar el cálculo exacto falta conectar el servicio de mapas. No se enviará un precio de envío inventado.';window.shippingCost=0;window.shippingKm=0;renderCart()}};
 
-document.querySelector('#checkout').onclick=()=>{if(!cart.length)return alert('Agregá al menos un producto.');let addr=document.querySelector('#address').value.trim();let sub=cart.reduce((a,x)=>a+(x.price||0)*x.qty,0),pending=cart.some(x=>x.price==null);let code='URI-'+Date.now().toString().slice(-8);let lines=cart.map(x=>`• ${x.marca} ${x.nombre} — ${x.variant==='5ml'?'Decant 5 ml':x.variant==='10ml'?'Decant 10 ml':'Sellado'} ×${x.qty} — ${x.price==null?'Consultar disponibilidad y precio':money(x.price*x.qty)}`);let finalTotal=sub+(window.shippingCost||0);let totalLine=pending?`\n💰 Total parcial: ${money(finalTotal)}`:`\n💰 Total: ${money(finalTotal)}`;let msg=`Hola! 👋 Quiero realizar un pedido en URIIIMPORT.\n\n🧾 Pedido #${code}\n\n🛍️ Mi pedido:\n${lines.join('\n')}\n\n💰 Productos con precio: ${money(sub)}${pending?'\n⚠️ Hay productos con disponibilidad y precio a consultar.':''}${totalLine}\n🚚 Envío: ${window.shippingCost?money(window.shippingCost)+' ('+window.shippingKm.toFixed(2)+' km)':'a confirmar según la dirección'}${addr?`\n📍 Entrega: ${addr}`:''}\n\nQuería confirmar disponibilidad${pending?' y precio de los productos pendientes':''} para conocer el total final y realizar el pago. ¡Gracias!`;window.open('https://wa.me/5491152295954?text='+encodeURIComponent(msg),'_blank')};
+async function createOrder(payload){
+  const cfg=window.URII_SUPABASE;
+  if(!cfg?.url||!cfg?.publishableKey)throw new Error('Configuración de pedidos no disponible');
+  const r=await fetch(cfg.url+'/functions/v1/create-order',{method:'POST',headers:{'Content-Type':'application/json','apikey':cfg.publishableKey,'Authorization':'Bearer '+cfg.publishableKey},body:JSON.stringify(payload)});
+  const d=await r.json().catch(()=>({}));
+  if(!r.ok||!d.success||!d.order_code)throw new Error(d.error||'No se pudo registrar el pedido');
+  return d.order_code;
+}
+document.querySelector('#checkout').onclick=async()=>{
+  if(!cart.length)return alert('Agregá al menos un producto.');
+  let addr=document.querySelector('#address').value.trim();
+  if(!addr)return alert('Ingresá la dirección de entrega.');
+  let sub=cart.reduce((a,x)=>a+(x.price||0)*x.qty,0),pending=cart.some(x=>x.price==null);
+  let finalTotal=sub+(window.shippingCost||0),btn=document.querySelector('#checkout'),oldText=btn.textContent;
+  btn.disabled=true;btn.textContent='Registrando pedido...';
+  try{
+    let code=await createOrder({customer_address:addr,distance_km:Number(window.shippingKm||0),shipping_cost:Number(window.shippingCost||0),products_total:sub,potential_total:finalTotal,has_pending_price:pending,items:cart});
+    let lines=cart.map(x=>`• ${x.marca} ${x.nombre} — ${x.variant==='5ml'?'Decant 5 ml':x.variant==='10ml'?'Decant 10 ml':'Sellado'} ×${x.qty} — ${x.price==null?'Consultar disponibilidad y precio':money(x.price*x.qty)}`);
+    let totalLine=pending?`\n💰 Total parcial: ${money(finalTotal)}`:`\n💰 Total: ${money(finalTotal)}`;
+    let msg=`Hola! 👋 Quiero realizar un pedido en URIIIMPORT.\n\n🧾 Pedido #${code}\n\n🛍️ Mi pedido:\n${lines.join('\n')}\n\n💰 Productos con precio: ${money(sub)}${pending?'\n⚠️ Hay productos con disponibilidad y precio a consultar.':''}${totalLine}\n🚚 Envío: ${window.shippingCost?money(window.shippingCost)+' ('+window.shippingKm.toFixed(2)+' km)':'a confirmar según la dirección'}\n📍 Entrega: ${addr}\n\nQuería confirmar disponibilidad${pending?' y precio de los productos pendientes':''} para conocer el total final y realizar el pago. ¡Gracias!`;
+    window.open('https://wa.me/5491152295954?text='+encodeURIComponent(msg),'_blank');
+  }catch(e){alert('No pudimos registrar el pedido. '+e.message)}
+  finally{btn.disabled=false;btn.textContent=oldText}
+};
 save();
