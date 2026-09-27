@@ -1,0 +1,4 @@
+URIIIMPORT - recortes PNG desde la imagen original enviada.
+Cantidad preparada: 50.
+Los archivos conservan transparencia y usan los IDs del catálogo cuando la identificación visual fue segura.
+No se asignaron nombres dudosos para evitar mostrar un frasco incorrecto en la tienda.
